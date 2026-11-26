@@ -31,3 +31,6 @@ coverage
 *.tmp
 *.temp
 .cache
+
+LOCAL_SETUP.md
+shortcuts
