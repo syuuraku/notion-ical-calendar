@@ -107,6 +107,11 @@ describe("CalendarServer", () => {
 	});
 
 	describe("GET /unknown", () => {
+		it("returns 404 for the WeChat feed when it is disabled", async () => {
+			const response = await fetch(`${baseUrl}/wechat/example.ics`);
+			expect(response.status).toBe(404);
+		});
+
 		it("should return 404 for unknown paths", async () => {
 			const response = await fetch(`${baseUrl}/unknown`);
 

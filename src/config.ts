@@ -1,15 +1,19 @@
-export interface Config {
-	notionApiKey: string;
+export interface FeedConfig {
 	notionDatabaseId: string;
 	calendarToken: string | null;
-	port: number;
-	cacheTtl: number;
 	propertyNames: {
 		title: string;
 		date: string;
 		description: string | null;
 		location: string | null;
 	};
+}
+
+export interface Config extends FeedConfig {
+	notionApiKey: string;
+	port: number;
+	cacheTtl: number;
+	wechat?: FeedConfig;
 }
 
 function getRequiredEnv(name: string): string {
@@ -48,7 +52,33 @@ export function loadConfig(): Config {
 		);
 	}
 
+	let wechat: FeedConfig | undefined;
+	if (process.env.WECHAT_DATABASE_ID || process.env.WECHAT_CALENDAR_TOKEN) {
+		const notionDatabaseId = getRequiredEnv("WECHAT_DATABASE_ID");
+		const token =
+			getOptionalEnvOrNull("WECHAT_CALENDAR_TOKEN") ?? calendarToken;
+		if (!token) {
+			throw new Error(
+				"Set CALENDAR_TOKEN or WECHAT_CALENDAR_TOKEN to protect the WeChat subscription",
+			);
+		}
+		wechat = {
+			notionDatabaseId,
+			calendarToken: token,
+			propertyNames: {
+				title: getOptionalEnv("WECHAT_PROPERTY_TITLE", "Title"),
+				date: getOptionalEnv(
+					"WECHAT_PROPERTY_DATE",
+					getOptionalEnv("WECHAT_DATE_PROPERTY", "Duration"),
+				),
+				description: null,
+				location: null,
+			},
+		};
+	}
+
 	return {
+		wechat,
 		notionApiKey: getRequiredEnv("NOTION_API_KEY"),
 		notionDatabaseId: getRequiredEnv("NOTION_DATABASE_ID"),
 		calendarToken,

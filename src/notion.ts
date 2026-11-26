@@ -4,7 +4,7 @@ import type {
 	QueryDataSourceResponse,
 } from "@notionhq/client";
 import { Client } from "@notionhq/client";
-import type { Config } from "./config.js";
+import type { FeedConfig } from "./config.js";
 
 const MAX_PAGES = 50; // ~5000 events max at page_size 100
 const MAX_LEN_TITLE = 500;
@@ -36,13 +36,11 @@ function getPropertyValue(
 
 function findTitleProperty(
 	properties: PageObjectResponse["properties"],
+	name: string,
 ): PropertyValue | undefined {
-	for (const prop of Object.values(properties)) {
-		if (prop.type === "title") {
-			return prop;
-		}
-	}
-	return undefined;
+	const configured = properties[name];
+	if (configured?.type === "title") return configured;
+	return Object.values(properties).find((prop) => prop.type === "title");
 }
 
 function extractTitle(property: PropertyValue | undefined): string {
@@ -89,9 +87,9 @@ function extractRichText(property: PropertyValue | undefined): string | null {
 
 function pageToEvent(
 	page: PageObjectResponse,
-	propertyNames: Config["propertyNames"],
+	propertyNames: FeedConfig["propertyNames"],
 ): CalendarEvent | null {
-	const titleProp = findTitleProperty(page.properties);
+	const titleProp = findTitleProperty(page.properties, propertyNames.title);
 	const dateProp = getPropertyValue(page.properties, propertyNames.date);
 
 	const dateInfo = extractDate(dateProp);
@@ -129,11 +127,11 @@ function pageToEvent(
 export class NotionCalendarClient {
 	private client: Client;
 	private databaseId: string;
-	private propertyNames: Config["propertyNames"];
+	private propertyNames: FeedConfig["propertyNames"];
 	private dataSourceId: string | null = null;
 
-	constructor(config: Config) {
-		this.client = new Client({ auth: config.notionApiKey });
+	constructor(notionApiKey: string, config: FeedConfig) {
+		this.client = new Client({ auth: notionApiKey });
 		this.databaseId = config.notionDatabaseId;
 		this.propertyNames = config.propertyNames;
 	}

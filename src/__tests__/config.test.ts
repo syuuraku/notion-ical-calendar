@@ -35,6 +35,7 @@ describe("config", () => {
 			expect(config.propertyNames.date).toBe("Date");
 			expect(config.propertyNames.description).toBeNull();
 			expect(config.propertyNames.location).toBeNull();
+			expect(config.wechat).toBeUndefined();
 		});
 
 		it("should override defaults with environment variables", () => {
@@ -64,6 +65,33 @@ describe("config", () => {
 			expect(() => loadConfig()).toThrow(
 				"Missing required environment variable: NOTION_API_KEY",
 			);
+		});
+
+		it("uses shared credentials and independently configured WeChat columns", () => {
+			process.env.NOTION_API_KEY = "test-api-key";
+			process.env.NOTION_DATABASE_ID = "events";
+			process.env.CALENDAR_TOKEN = "events-token";
+			process.env.WECHAT_DATABASE_ID = "wechat";
+			process.env.WECHAT_CALENDAR_TOKEN = "";
+			process.env.WECHAT_DATE_PROPERTY = "Previous date";
+			expect(loadConfig().wechat?.propertyNames.date).toBe("Previous date");
+			process.env.WECHAT_PROPERTY_DATE = "Work interval";
+			process.env.WECHAT_PROPERTY_TITLE = "Article name";
+			expect(loadConfig().wechat).toMatchObject({
+				notionDatabaseId: "wechat",
+				calendarToken: "events-token",
+				propertyNames: { date: "Work interval", title: "Article name" },
+			});
+			expect(loadConfig().propertyNames.date).toBe("Date");
+		});
+
+		it("requires a database and at least one token for the WeChat feed", () => {
+			process.env.WECHAT_CALENDAR_TOKEN = "wechat-token";
+			expect(() => loadConfig()).toThrow("WECHAT_DATABASE_ID");
+			process.env.WECHAT_DATABASE_ID = "wechat";
+			process.env.WECHAT_CALENDAR_TOKEN = "";
+			process.env.CALENDAR_TOKEN = "";
+			expect(() => loadConfig()).toThrow("WECHAT_CALENDAR_TOKEN");
 		});
 
 		it("should throw error when NOTION_DATABASE_ID is missing", () => {

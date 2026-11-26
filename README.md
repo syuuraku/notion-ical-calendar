@@ -36,6 +36,16 @@ Your Notion database should have:
 | `NOTION_PROPERTY_DATE` | No | "Date" | Property name for event date |
 | `NOTION_PROPERTY_DESCRIPTION` | No | - | Property name for description |
 | `NOTION_PROPERTY_LOCATION` | No | - | Property name for location |
+| `WECHAT_DATABASE_ID` | For the WeChat feed | - | Notion database ID for 公众号推送排期 |
+| `WECHAT_PROPERTY_DATE` | No | `Duration` | Date range to export from the WeChat database |
+| `WECHAT_PROPERTY_TITLE` | No | `Title` | Name of the WeChat database's title column |
+| `WECHAT_CALENDAR_TOKEN` | If `CALENDAR_TOKEN` is empty | `CALENDAR_TOKEN` | Optional separate token for the WeChat subscription |
+
+### Adding the WeChat subscription on Render
+
+Give the integration used by `NOTION_API_KEY` read access to 公众号推送排期. In the existing Render service's **Environment** settings, enter the database ID under `WECHAT_DATABASE_ID`, the date column under `WECHAT_PROPERTY_DATE`, and the title column under `WECHAT_PROPERTY_TITLE`. Deployments using the earlier `WECHAT_DATE_PROPERTY` spelling can keep it. If both are set, `WECHAT_PROPERTY_DATE` takes precedence.
+
+Deploy the updated service, then add `https://<your-service>.onrender.com/wechat/<token>.ics` as a second subscribed calendar on the iPhone. Use the value of `CALENDAR_TOKEN`, or the feed-specific `WECHAT_CALENDAR_TOKEN` if configured. The calendar uses the start and end of the selected date column and skips rows where it is empty. Each subscription refreshes and caches its own events.
 
 ### Protecting the calendar feed
 
@@ -83,6 +93,7 @@ pnpm start
 |--------|------|-------------|
 | GET | `/calendar.ics` | Returns the iCal feed (when `CALENDAR_TOKEN` is not set) |
 | GET | `/calendar/<token>.ics` | Returns the iCal feed (when `CALENDAR_TOKEN` is set) |
+| GET | `/wechat/<token>.ics` | Returns 公众号推送排期 using the shared or feed-specific token when enabled |
 | GET | `/health` | Health check (returns 200 OK) |
 
 ## Docker
