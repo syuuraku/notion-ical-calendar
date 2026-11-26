@@ -34,3 +34,4 @@ coverage
 
 LOCAL_SETUP.md
 shortcuts
+src/__tests__/

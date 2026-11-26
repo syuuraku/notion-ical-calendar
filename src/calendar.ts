@@ -1,9 +1,12 @@
 import ical, { type ICalCalendar } from "ical-generator";
 import type { CalendarEvent } from "./notion.js";
 
-export function generateCalendar(events: CalendarEvent[]): ICalCalendar {
+export function generateCalendar(
+	events: CalendarEvent[],
+	name = "Notion Calendar",
+): ICalCalendar {
 	const calendar = ical({
-		name: "Notion Calendar",
+		name,
 		prodId: {
 			company: "notion-ical-calendar",
 			product: "notion-ical-calendar",
