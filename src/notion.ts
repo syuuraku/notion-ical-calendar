@@ -36,13 +36,11 @@ function getPropertyValue(
 
 function findTitleProperty(
 	properties: PageObjectResponse["properties"],
+	name: string,
 ): PropertyValue | undefined {
-	for (const prop of Object.values(properties)) {
-		if (prop.type === "title") {
-			return prop;
-		}
-	}
-	return undefined;
+	const configured = properties[name];
+	if (configured?.type === "title") return configured;
+	return Object.values(properties).find((prop) => prop.type === "title");
 }
 
 function extractTitle(property: PropertyValue | undefined): string {
@@ -91,7 +89,7 @@ function pageToEvent(
 	page: PageObjectResponse,
 	propertyNames: FeedConfig["propertyNames"],
 ): CalendarEvent | null {
-	const titleProp = findTitleProperty(page.properties);
+	const titleProp = findTitleProperty(page.properties, propertyNames.title);
 	const dateProp = getPropertyValue(page.properties, propertyNames.date);
 
 	const dateInfo = extractDate(dateProp);

@@ -55,16 +55,22 @@ export function loadConfig(): Config {
 	let wechat: FeedConfig | undefined;
 	if (process.env.WECHAT_DATABASE_ID || process.env.WECHAT_CALENDAR_TOKEN) {
 		const notionDatabaseId = getRequiredEnv("WECHAT_DATABASE_ID");
-		const token = getRequiredEnv("WECHAT_CALENDAR_TOKEN");
-		if (token === calendarToken) {
-			throw new Error("WECHAT_CALENDAR_TOKEN must differ from CALENDAR_TOKEN");
+		const token =
+			getOptionalEnvOrNull("WECHAT_CALENDAR_TOKEN") ?? calendarToken;
+		if (!token) {
+			throw new Error(
+				"Set CALENDAR_TOKEN or WECHAT_CALENDAR_TOKEN to protect the WeChat subscription",
+			);
 		}
 		wechat = {
 			notionDatabaseId,
 			calendarToken: token,
 			propertyNames: {
-				title: "Title",
-				date: getOptionalEnv("WECHAT_DATE_PROPERTY", "Duration"),
+				title: getOptionalEnv("WECHAT_PROPERTY_TITLE", "Title"),
+				date: getOptionalEnv(
+					"WECHAT_PROPERTY_DATE",
+					getOptionalEnv("WECHAT_DATE_PROPERTY", "Duration"),
+				),
 				description: null,
 				location: null,
 			},
