@@ -4,7 +4,7 @@ import type {
 	QueryDataSourceResponse,
 } from "@notionhq/client";
 import { Client } from "@notionhq/client";
-import type { Config } from "./config.js";
+import type { FeedConfig } from "./config.js";
 
 const MAX_PAGES = 50; // ~5000 events max at page_size 100
 const MAX_LEN_TITLE = 500;
@@ -89,7 +89,7 @@ function extractRichText(property: PropertyValue | undefined): string | null {
 
 function pageToEvent(
 	page: PageObjectResponse,
-	propertyNames: Config["propertyNames"],
+	propertyNames: FeedConfig["propertyNames"],
 ): CalendarEvent | null {
 	const titleProp = findTitleProperty(page.properties);
 	const dateProp = getPropertyValue(page.properties, propertyNames.date);
@@ -129,11 +129,11 @@ function pageToEvent(
 export class NotionCalendarClient {
 	private client: Client;
 	private databaseId: string;
-	private propertyNames: Config["propertyNames"];
+	private propertyNames: FeedConfig["propertyNames"];
 	private dataSourceId: string | null = null;
 
-	constructor(config: Config) {
-		this.client = new Client({ auth: config.notionApiKey });
+	constructor(notionApiKey: string, config: FeedConfig) {
+		this.client = new Client({ auth: notionApiKey });
 		this.databaseId = config.notionDatabaseId;
 		this.propertyNames = config.propertyNames;
 	}

@@ -36,6 +36,15 @@ Your Notion database should have:
 | `NOTION_PROPERTY_DATE` | No | "Date" | Property name for event date |
 | `NOTION_PROPERTY_DESCRIPTION` | No | - | Property name for description |
 | `NOTION_PROPERTY_LOCATION` | No | - | Property name for location |
+| `WECHAT_DATABASE_ID` | For the WeChat feed | - | Notion database ID for 公众号推送排期 |
+| `WECHAT_CALENDAR_TOKEN` | For the WeChat feed | - | Separate secret for the WeChat subscription URL |
+| `WECHAT_DATE_PROPERTY` | No | `Duration` | Date range to export from the WeChat database |
+
+### Adding the WeChat subscription on Render
+
+Give the integration used by `NOTION_API_KEY` read access to 公众号推送排期. In the existing Render service's **Environment** settings, add `WECHAT_DATABASE_ID` and `WECHAT_CALENDAR_TOKEN` together. Use the database ID from the Notion database URL and generate a distinct token with `openssl rand -hex 32`.
+
+Deploy the version with both feeds, then add `https://<your-service>.onrender.com/wechat/<WECHAT_CALENDAR_TOKEN>.ics` as a second subscribed calendar on the iPhone. It uses the Notion title and the start and end of `Duration`. Rows with an empty `Duration` are skipped. Application Events continues to use its existing URL. Each subscription refreshes and caches its own events.
 
 ### Protecting the calendar feed
 
@@ -83,6 +92,7 @@ pnpm start
 |--------|------|-------------|
 | GET | `/calendar.ics` | Returns the iCal feed (when `CALENDAR_TOKEN` is not set) |
 | GET | `/calendar/<token>.ics` | Returns the iCal feed (when `CALENDAR_TOKEN` is set) |
+| GET | `/wechat/<token>.ics` | Returns 公众号推送排期 with its own subscription token when enabled |
 | GET | `/health` | Health check (returns 200 OK) |
 
 ## Docker
